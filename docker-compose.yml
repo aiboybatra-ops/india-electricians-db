@@ -1,0 +1,20 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+    volumes:
+      - ./electricians_data.db:/app/electricians_data.db
+    restart: unless-stopped
+
+  scraper:
+    build: .
+    command: python scrape_all_cities.py --all
+    environment:
+      - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY}
+    volumes:
+      - ./electricians_data.db:/app/electricians_data.db
+    profiles:
+      - scrape

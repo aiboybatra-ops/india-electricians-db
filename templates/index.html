@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Electricians Database</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .stat-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .stat-card .label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .search-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .results-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .table th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        .badge-source {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        
+        .rating-badge {
+            background-color: #10b981;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 2px;
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 0.5rem 2rem;
+        }
+        
+        .btn-search:hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        
+        .phone-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .phone-link:hover {
+            text-decoration: underline;
+        }
+        
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #64748b;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .loading .loading-spinner {
+            display: inline-block;
+        }
+        
+        .source-badge {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+        
+        .source-justdial { background-color: #f97316; }
+        .source-indiamart { background-color: #3b82f6; }
+        .source-sulekha { background-color: #8b5cf6; }
+        .source-google { background-color: #22c55e; }
+        .source-urbancompany { background-color: #ec4899; }
+        
+        /* Smart Meter Score */
+        .meter-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .meter-score-bar {
+            width: 50px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .meter-score-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .meter-high { background: #22c55e; }
+        .meter-medium { background: #f59e0b; }
+        .meter-low { background: #ef4444; }
+        
+        /* Verification Badge */
+        .verified-badge {
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+        
+        .verified-badge:hover {
+            transform: scale(1.2);
+        }
+        
+        .verified-yes { color: #22c55e; }
+        .verified-no { color: #94a3b8; }
+        
+        /* Category Badge */
+        .category-badge {
+            font-size: 0.65rem;
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+        }
+        
+        .cat-electrician { background: #dbeafe; color: #1d4ed8; }
+        .cat-meter { background: #d1fae5; color: #047857; }
+        .cat-lineman { background: #fef3c7; color: #b45309; }
+        .cat-solar { background: #fce7f3; color: #be185d; }
+        .cat-ac { background: #e0e7ff; color: #4338ca; }
+        .cat-industrial { background: #f3e8ff; color: #7c3aed; }
+        
+        /* Modal styling */
+        .modal-header.bg-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .detail-row {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .table th, .table td {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-lightning-charge-fill me-2"></i>
+                India Electricians Database
+            </span>
+            <span class="text-white-50">
+                <i class="bi bi-database me-1"></i>
+                <span id="totalRecords">{{ stats.total_records }}</span> records
+            </span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <div class="number">{{ stats.total_records }}</div>
+                            <div class="label">Total Electricians</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon bg-success bg-opacity-10 text-success me-3">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div>
+                            <div class="number">{{ stats.by_state|length }}</div>
+                            <div class="label">States Covered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div>
+                            <div class="number">{{ stats.top_cities|length }}</div>
+                            <div class="label">Cities</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="icon bg-info bg-opacity-10 text-info me-3">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                        <div>
+                            <div class="number" id="verifiedCount">0</div>
+                            <div class="label">Verified</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Card -->
+        <div class="search-card mb-4">
+            <h5 class="mb-3"><i class="bi bi-search me-2"></i>Search & Filter</h5>
+            <form id="searchForm">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label">State</label>
+                        <select class="form-select form-select-sm" id="stateSelect" name="state">
+                            <option value="">All States</option>
+                            {% for state in states %}
+                            <option value="{{ state }}">{{ state }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">City</label>
+                        <select class="form-select form-select-sm" id="citySelect" name="city">
+                            <option value="">All Cities</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Category</label>
+                        <select class="form-select form-select-sm" id="categorySelect" name="category">
+                            <option value="">All Categories</option>
+                            <option value="Electrician">Electrician</option>
+                            <option value="Meter Installer">Meter Installer</option>
+                            <option value="Electrical Lineman">Lineman</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="AC Electrician">AC Electrician</option>
+                            <option value="Solar">Solar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Source</label>
+                        <select class="form-select form-select-sm" id="sourceSelect" name="source">
+                            <option value="">All Sources</option>
+                            <option value="Google Places">Google Maps</option>
+                            <option value="JustDial">JustDial</option>
+                            <option value="IndiaMART">IndiaMART</option>
+                            <option value="Sulekha">Sulekha</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Verification</label>
+                        <select class="form-select form-select-sm" id="verifiedSelect" name="verified">
+                            <option value="">All</option>
+                            <option value="1">Verified Only</option>
+                            <option value="0">Unverified Only</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control form-control-sm" id="nameInput" name="name" placeholder="Search...">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <div>
+                            <button type="submit" class="btn btn-primary btn-search btn-sm me-2">
+                                <span class="loading-spinner spinner-border spinner-border-sm me-1"></span>
+                                <i class="bi bi-search me-1"></i> Search
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetForm()">
+                                <i class="bi bi-x-circle me-1"></i> Reset
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportData()">
+                            <i class="bi bi-download me-1"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Card -->
+        <div class="results-card">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Results</h5>
+                <span class="text-muted" id="resultCount">Showing 0 records</span>
+            </div>
+            
+            <div id="resultsContainer">
+                <div class="empty-state">
+                    <i class="bi bi-search"></i>
+                    <h5>Search the Database</h5>
+                    <p>Use the filters above to search for electricians</p>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="p-3 border-top" id="paginationContainer" style="display: none;">
+                <nav aria-label="Results pagination">
+                    <ul class="pagination mb-0 justify-content-center" id="pagination">
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail/Edit Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i><span id="modalName"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Content loaded dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveChanges()">
+                        <i class="bi bi-check-lg me-1"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPage = 1;
+        const perPage = 50;
+        let currentRecordId = null;
+
+        // Load cities when state changes
+        document.getElementById('stateSelect').addEventListener('change', async function() {
+            const state = this.value;
+            const citySelect = document.getElementById('citySelect');
+            
+            citySelect.innerHTML = '<option value="">All Cities</option>';
+            
+            if (state) {
+                try {
+                    const response = await fetch(`/api/cities/${encodeURIComponent(state)}`);
+                    const cities = await response.json();
+                    
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.city;
+                        option.textContent = `${city.city} (${city.count})`;
+                        citySelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading cities:', error);
+                }
+            }
+        });
+
+        // Search form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            currentPage = 1;
+            search();
+        });
+
+        // Search function
+        async function search() {
+            const form = document.getElementById('searchForm');
+            const btn = form.querySelector('button[type="submit"]');
+            
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            const params = new URLSearchParams({
+                state: document.getElementById('stateSelect').value,
+                city: document.getElementById('citySelect').value,
+                source: document.getElementById('sourceSelect').value,
+                name: document.getElementById('nameInput').value,
+                category: document.getElementById('categorySelect').value,
+                verified: document.getElementById('verifiedSelect').value,
+                page: currentPage,
+                per_page: perPage
+            });
+            
+            try {
+                const response = await fetch(`/api/search?${params}`);
+                const data = await response.json();
+                
+                displayResults(data);
+                displayPagination(data);
+                
+                document.getElementById('resultCount').textContent = 
+                    `Showing ${data.results.length} of ${data.total} records`;
+                
+                // Update verified count
+                const verified = data.results.filter(r => r.verified).length;
+                document.getElementById('verifiedCount').textContent = verified;
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h5>Error</h5>
+                        <p>An error occurred while searching. Please try again.</p>
+                    </div>
+                `;
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        // Get category class
+        function getCategoryClass(category) {
+            if (!category) return 'cat-electrician';
+            const cat = category.toLowerCase();
+            if (cat.includes('meter')) return 'cat-meter';
+            if (cat.includes('lineman')) return 'cat-lineman';
+            if (cat.includes('solar')) return 'cat-solar';
+            if (cat.includes('ac')) return 'cat-ac';
+            if (cat.includes('industrial')) return 'cat-industrial';
+            return 'cat-electrician';
+        }
+
+        // Get meter score color
+        function getMeterScoreClass(score) {
+            if (score >= 70) return 'meter-high';
+            if (score >= 40) return 'meter-medium';
+            return 'meter-low';
+        }
+
+        // Display results
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (data.results.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5>No Results Found</h5>
+                        <p>Try adjusting your search filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;" title="Verified"><i class="bi bi-patch-check"></i></th>
+                                <th>Name / Category</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Rating</th>
+                                <th>Smart Meter Fit</th>
+                                <th>Source</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.results.forEach(r => {
+                const sourceClass = `source-${(r.source || 'unknown').split(' ')[0].toLowerCase()}`;
+                const rating = r.rating ? `<span class="badge rating-badge">${r.rating} ⭐</span>` : '-';
+                const reviews = r.review_count ? `<small class="text-muted">(${r.review_count})</small>` : '';
+                const verifiedClass = r.verified ? 'verified-yes' : 'verified-no';
+                const verifiedIcon = r.verified ? 'bi-patch-check-fill' : 'bi-patch-check';
+                const category = r.category || 'Electrician';
+                const categoryClass = getCategoryClass(category);
+                
+                // Smart meter score display
+                const score = r.smart_meter_score || 0;
+                const scoreClass = getMeterScoreClass(score);
+                const meterHtml = score > 0 ? `
+                    <div class="meter-score">
+                        <div class="meter-score-bar">
+                            <div class="meter-score-fill ${scoreClass}" style="width: ${score}%"></div>
+                        </div>
+                        <small>${score}%</small>
+                    </div>
+                ` : '<small class="text-muted">-</small>';
+                
+                html += `
+                    <tr>
+                        <td>
+                            <i class="bi ${verifiedIcon} ${verifiedClass} verified-badge" 
+                               onclick="toggleVerification(${r.id}, ${!r.verified})"
+                               title="${r.verified ? 'Verified - Click to unverify' : 'Not verified - Click to verify'}"></i>
+                        </td>
+                        <td>
+                            <strong>${escapeHtml(r.name)}</strong>
+                            <br><span class="badge category-badge ${categoryClass}">${escapeHtml(category)}</span>
+                            ${r.service_description ? `<br><small class="text-muted">${escapeHtml(r.service_description.substring(0, 40))}...</small>` : ''}
+                        </td>
+                        <td>
+                            <a href="tel:${r.phone}" class="phone-link">
+                                <i class="bi bi-telephone me-1"></i>${formatPhone(r.phone)}
+                            </a>
+                        </td>
+                        <td>
+                            <small><i class="bi bi-geo-alt text-muted me-1"></i>
+                            ${escapeHtml(r.city)}, ${escapeHtml(r.state)}</small>
+                        </td>
+                        <td>${rating} ${reviews}</td>
+                        <td>${meterHtml}</td>
+                        <td>
+                            <span class="badge ${sourceClass} source-badge">${r.source || 'Unknown'}</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="showDetails(${r.id})" title="View/Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            ${r.source_url ? `<a href="${r.source_url}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View Source"><i class="bi bi-box-arrow-up-right"></i></a>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // Toggle verification
+        async function toggleVerification(id, verified) {
+            try {
+                const response = await fetch(`/api/electrician/${id}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ verified, verified_by: 'User' })
+                });
+                
+                if (response.ok) {
+                    search(); // Refresh results
+                }
+            } catch (error) {
+                console.error('Error updating verification:', error);
+            }
+        }
+
+        // Show details modal
+        async function showDetails(id) {
+            currentRecordId = id;
+            
+            try {
+                const response = await fetch(`/api/electrician/${id}`);
+                const data = await response.json();
+                
+                document.getElementById('modalName').textContent = data.name;
+                
+                const category = data.category || 'Electrician';
+                
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-row">
+                                <div class="detail-label">Phone</div>
+                                <div><a href="tel:${data.phone}" class="phone-link">${formatPhone(data.phone)}</a></div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Location</div>
+                                <div>${escapeHtml(data.city)}, ${escapeHtml(data.state)}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Address</div>
+                                <div>${escapeHtml(data.address || '-')}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Rating</div>
+                                <div>${data.rating ? `${data.rating} ⭐ (${data.review_count || 0} reviews)` : '-'}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Source</div>
+                                <div>${data.source || '-'} ${data.source_url ? `<a href="${data.source_url}" target="_blank" class="ms-2"><i class="bi bi-box-arrow-up-right"></i></a>` : ''}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-row">
+                                <div class="detail-label">Category</div>
+                                <select class="form-select form-select-sm" id="editCategory">
+                                    <option value="Electrician" ${category === 'Electrician' ? 'selected' : ''}>Electrician</option>
+                                    <option value="Meter Installer" ${category === 'Meter Installer' ? 'selected' : ''}>Meter Installer</option>
+                                    <option value="Electrical Lineman" ${category === 'Electrical Lineman' ? 'selected' : ''}>Electrical Lineman</option>
+                                    <option value="Industrial Electrician" ${category === 'Industrial Electrician' ? 'selected' : ''}>Industrial</option>
+                                    <option value="AC Electrician" ${category === 'AC Electrician' ? 'selected' : ''}>AC Electrician</option>
+                                    <option value="Solar Installation" ${category === 'Solar Installation' ? 'selected' : ''}>Solar</option>
+                                    <option value="House Wiring" ${category === 'House Wiring' ? 'selected' : ''}>House Wiring</option>
+                                    <option value="Electrical Contractor" ${category === 'Electrical Contractor' ? 'selected' : ''}>Contractor</option>
+                                </select>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Service Description</div>
+                                <textarea class="form-control form-control-sm" id="editDescription" rows="2">${escapeHtml(data.service_description || '')}</textarea>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Smart Meter Installation Fit (0-100)</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="range" class="form-range flex-grow-1" id="editMeterScore" min="0" max="100" value="${data.smart_meter_score || 0}" 
+                                           oninput="document.getElementById('meterScoreValue').textContent = this.value + '%'">
+                                    <span id="meterScoreValue" class="badge bg-primary">${data.smart_meter_score || 0}%</span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Smart Meter Notes</div>
+                                <textarea class="form-control form-control-sm" id="editMeterNotes" rows="2" 
+                                          placeholder="Why suitable for smart meter installation?">${escapeHtml(data.smart_meter_notes || '')}</textarea>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Verification Status</div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="editVerified" ${data.verified ? 'checked' : ''}>
+                                    <label class="form-check-label" for="editVerified">
+                                        ${data.verified ? `Verified` : 'Not Verified'}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+                modal.show();
+                
+            } catch (error) {
+                console.error('Error loading details:', error);
+            }
+        }
+
+        // Save changes
+        async function saveChanges() {
+            if (!currentRecordId) return;
+            
+            const data = {
+                category: document.getElementById('editCategory').value,
+                service_description: document.getElementById('editDescription').value,
+                smart_meter_score: parseInt(document.getElementById('editMeterScore').value),
+                smart_meter_notes: document.getElementById('editMeterNotes').value,
+                verified: document.getElementById('editVerified').checked,
+                verified_by: 'User'
+            };
+            
+            try {
+                const response = await fetch(`/api/electrician/${currentRecordId}/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+                    search(); // Refresh results
+                } else {
+                    alert('Error saving changes');
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('Error saving changes');
+            }
+        }
+
+        // Display pagination
+        function displayPagination(data) {
+            const container = document.getElementById('paginationContainer');
+            const pagination = document.getElementById('pagination');
+            
+            if (data.total_pages <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            let html = '';
+            
+            // Previous button
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="goToPage(${currentPage - 1}); return false;">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+            
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(data.total_pages, currentPage + 2);
+            
+            if (startPage > 1) {
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="goToPage(1); return false;">1</a></li>`;
+                if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i}</a>
+                    </li>
+                `;
+            }
+            
+            if (endPage < data.total_pages) {
+                if (endPage < data.total_pages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                html += `<li class="page-item"><a class="page-link" href="#" onclick="goToPage(${data.total_pages}); return false;">${data.total_pages}</a></li>`;
+            }
+            
+            // Next button
+            html += `
+                <li class="page-item ${currentPage === data.total_pages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="goToPage(${currentPage + 1}); return false;">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+            
+            pagination.innerHTML = html;
+        }
+
+        // Go to page
+        function goToPage(page) {
+            currentPage = page;
+            search();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('searchForm').reset();
+            document.getElementById('citySelect').innerHTML = '<option value="">All Cities</option>';
+            document.getElementById('categorySelect').value = '';
+            document.getElementById('verifiedSelect').value = '';
+            document.getElementById('resultsContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-search"></i>
+                    <h5>Search the Database</h5>
+                    <p>Use the filters above to search for electricians</p>
+                </div>
+            `;
+            document.getElementById('paginationContainer').style.display = 'none';
+            document.getElementById('resultCount').textContent = 'Showing 0 records';
+        }
+
+        // Export data
+        function exportData() {
+            const state = document.getElementById('stateSelect').value;
+            const city = document.getElementById('citySelect').value;
+            
+            const params = new URLSearchParams({ state, city });
+            window.location.href = `/api/export?${params}`;
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatPhone(phone) {
+            if (!phone) return '';
+            // Format as XXX-XXX-XXXX for Indian numbers
+            if (phone.length === 10) {
+                return `${phone.substring(0, 5)}-${phone.substring(5)}`;
+            }
+            return phone;
+        }
+
+        // Initial search on load
+        document.addEventListener('DOMContentLoaded', function() {
+            search();
+        });
+    </script>
+</body>
+</html>

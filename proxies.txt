@@ -1,0 +1,25 @@
+# Proxy List for India Electricians Scraper
+# ==========================================
+# Add your proxies here, one per line
+# 
+# Supported formats:
+#   - host:port
+#   - host:port:username:password
+#   - http://host:port
+#   - http://username:password@host:port
+#
+# Lines starting with # are ignored
+# ==========================================
+
+# Example proxies (replace with your own):
+# 192.168.1.1:8080
+# proxy.example.com:3128:user:pass
+# http://user:pass@proxy.example.com:8080
+
+# Free proxy sources (unreliable, for testing only):
+# Get free proxies from:
+#   - https://free-proxy-list.net/
+#   - https://www.sslproxies.org/
+#   - https://www.proxy-list.download/
+#
+# Add your proxies below:
