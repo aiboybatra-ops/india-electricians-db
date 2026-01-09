@@ -46,6 +46,22 @@ def get_states():
         session.close()
 
 
+@app.route('/api/cities')
+def get_all_cities():
+    """Get all cities with data."""
+    session = storage.Session()
+    try:
+        cities = session.query(
+            ElectricianDB.city,
+            ElectricianDB.state,
+            func.count(ElectricianDB.id).label('count')
+        ).group_by(ElectricianDB.city, ElectricianDB.state).order_by(ElectricianDB.city).all()
+        
+        return jsonify([{'city': c, 'state': s, 'count': cnt} for c, s, cnt in cities])
+    finally:
+        session.close()
+
+
 @app.route('/api/cities/<state>')
 def get_cities(state):
     """Get cities for a state."""
@@ -247,6 +263,79 @@ def get_categories():
         ).filter(ElectricianDB.category != None).group_by(ElectricianDB.category).all()
         
         return jsonify([{'category': c, 'count': cnt} for c, cnt in categories])
+    finally:
+        session.close()
+
+
+@app.route('/api/electrician', methods=['POST'])
+def create_electrician():
+    """Create a new electrician record."""
+    session = storage.Session()
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data.get('name') or not data.get('phone'):
+            return jsonify({'error': 'Name and phone are required'}), 400
+        
+        # Check for duplicate phone
+        existing = session.query(ElectricianDB).filter(
+            ElectricianDB.phone == data.get('phone')
+        ).first()
+        
+        if existing:
+            return jsonify({'error': 'A record with this phone number already exists'}), 400
+        
+        record = ElectricianDB(
+            name=data.get('name'),
+            phone=data.get('phone'),
+            city=data.get('city', ''),
+            state=data.get('state', ''),
+            address=data.get('address', ''),
+            source='Manual Entry',
+            source_url='',
+            category=data.get('category', 'Electrician'),
+            service_description=data.get('service_description', ''),
+            smart_meter_score=int(data.get('smart_meter_score', 50)),
+            smart_meter_notes=data.get('smart_meter_notes', ''),
+            verified=data.get('verified', False),
+            verified_by=data.get('verified_by', 'User') if data.get('verified') else None,
+            verified_at=datetime.utcnow() if data.get('verified') else None,
+            scraped_at=datetime.utcnow(),
+            unique_key=f"manual_{data.get('name')}_{data.get('phone')}"
+        )
+        
+        session.add(record)
+        session.commit()
+        
+        return jsonify({
+            'success': True,
+            'id': record.id,
+            'message': 'Record created successfully'
+        })
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@app.route('/api/electrician/<int:id>', methods=['DELETE'])
+def delete_electrician(id):
+    """Delete an electrician record."""
+    session = storage.Session()
+    try:
+        record = session.query(ElectricianDB).filter(ElectricianDB.id == id).first()
+        if not record:
+            return jsonify({'error': 'Not found'}), 404
+        
+        session.delete(record)
+        session.commit()
+        
+        return jsonify({'success': True, 'message': 'Record deleted successfully'})
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
     finally:
         session.close()
 
