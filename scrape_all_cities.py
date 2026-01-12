@@ -34,6 +34,13 @@ CITY_COORDS = {
     'Kolkata': ('22.5726', '88.3639', 'West Bengal'),
     'Jaipur': ('26.9124', '75.7873', 'Rajasthan'),
     'Lucknow': ('26.8467', '80.9462', 'Uttar Pradesh'),
+    'Jewar': ('28.1300', '77.5500', 'Uttar Pradesh'),
+    'Greater Noida': ('28.4744', '77.5040', 'Uttar Pradesh'),
+    'Dankaur': ('28.3510', '77.5540', 'Uttar Pradesh'),
+    'Knowledge Park': ('28.4725', '77.4890', 'Uttar Pradesh'),
+    'Pari Chowk': ('28.4650', '77.5100', 'Uttar Pradesh'),
+    'Alpha': ('28.5000', '77.5200', 'Uttar Pradesh'),
+    'Surajpur': ('28.4800', '77.5100', 'Uttar Pradesh'),
 }
 
 
