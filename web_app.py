@@ -340,6 +340,61 @@ def delete_electrician(id):
         session.close()
 
 
+@app.route('/api/import', methods=['POST'])
+def import_data():
+    """Bulk import electrician records."""
+    try:
+        data = request.get_json()
+        if not data or 'records' not in data:
+            return jsonify({'error': 'No records provided'}), 400
+        
+        records = data['records']
+        session = storage.Session()
+        
+        imported = 0
+        skipped = 0
+        
+        for r in records:
+            # Check if already exists by phone
+            existing = session.query(ElectricianDB).filter(
+                ElectricianDB.phone == r.get('phone')
+            ).first()
+            
+            if existing:
+                skipped += 1
+                continue
+            
+            record = ElectricianDB(
+                name=r.get('name', ''),
+                phone=r.get('phone', ''),
+                city=r.get('city', ''),
+                state=r.get('state', ''),
+                address=r.get('address', ''),
+                rating=r.get('rating'),
+                review_count=r.get('review_count') or r.get('reviews'),
+                website=r.get('website', ''),
+                source=r.get('source', 'import'),
+                category=r.get('category', ''),
+                verified=r.get('verified', False),
+                scraped_at=datetime.utcnow(),
+                unique_key=f"{r.get('source', 'import')}_{r.get('phone')}"
+            )
+            session.add(record)
+            imported += 1
+        
+        session.commit()
+        session.close()
+        
+        return jsonify({
+            'success': True,
+            'imported': imported,
+            'skipped': skipped,
+            'message': f'Imported {imported} records, skipped {skipped} duplicates'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/export')
 def export_data():
     """Export filtered data as CSV."""
